@@ -1,2 +1,15 @@
 ---
-# defaults file for jbzdak.ansible-restic
+restic_scripts_dir: /root/restic
+
+
+
+restic_sites:
+  site1:
+    openrc_file_contents: null
+    restic_storage_password: null
+    restic_storage_target: null
+    restic_backup_target: null
+    restic_exclude_file_contents: null
+    cron_run_time: null
+
+

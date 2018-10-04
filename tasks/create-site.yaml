@@ -1,0 +1,53 @@
+- name: Set up site alias
+  set_fact:
+    site: "{{ item.value }}"
+    site_name: "{{ item.key }}"
+
+- name: Create scripts dir
+  file:
+    name: "{{ restic_scripts_dir }}"
+    state: directory
+
+- name: create excludes file
+  template:
+    src: excludes
+    dest: "{{ restic_scripts_dir }}/{{ site_name }}.excludes"
+    mode: "600"
+
+- name: create rc file
+  template:
+    src: restic-rc
+    dest: "{{ restic_scripts_dir }}/{{ site_name }}.rc"
+    mode: "600"
+
+- name: create password file
+  template:
+    src: storage-password.txt
+    dest: "{{ restic_scripts_dir }}/{{ site_name }}.pass"
+    mode: "600"
+
+- name: create init file
+  template:
+    src: restic-init.sh
+    dest: "{{ restic_scripts_dir }}/{{ site_name }}.init.sh"
+    mode: "700"
+
+- name: create backup file
+  template:
+    src: restic-backup.sh
+    dest: "{{ restic_scripts_dir }}/{{ site_name }}.backup.sh"
+    mode: "700"
+
+- name: init repository
+  command: "{{ restic_scripts_dir }}/{{ site_name }}.init.sh"
+  register: output
+  failed_when: output.rc != 0 and "repository master key and config already initialized" not in output.stderr
+  changed_when: '"repository master key and config already initialized" not in output.stderr'
+
+
+- name: install to cron
+  cron:
+    name: "restic-{{ site_name }}"
+    special_time: "{{ site.cron_run_time }}"
+    state: present
+    job: "{{ restic_scripts_dir }}/{{ site_name }}.backup.sh > /dev/null"

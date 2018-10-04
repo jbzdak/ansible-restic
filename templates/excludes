@@ -1,0 +1,1 @@
+{{ site.restic_exclude_file_contents }}

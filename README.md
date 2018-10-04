@@ -1,38 +1,60 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+Configures automatic backups using [restic](1). Tested using [openstack swift](1) backup but should work for other backends as well.  
 
+[1]: https://restic.readthedocs.io/en/stable/index.html
+[2]: https://docs.openstack.org/swift/latest/
+
+How it works
+------------
+
+All backups are done using root account, script files
+are in ``/root/restic`` and backup comnmand is added to crontab. 
+
+I decided to use root as:
+  
+* swift upload keys are read/write by design so anyone 
+  who has access to keys can delete your backups, I 
+  probably using a local user would be as good
+* If you mess your file ownership rights you'll still be
+  able to back everything up.   
+ 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+Linux system with installed restic program. 
+
+See restic manual for instalation instructions.
 
 Role Variables
 --------------
+ 
+ 
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
-
-Dependencies
-------------
-
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+    # You can upload multiple folders to multiple containers
+    restic_sites:      
+      # Upload site
+      site1: 
+        # File containing enviormental variables that 
+        # configure upload permissions. 
+        # If your backend is swift use your openstack-rc
+        # file. 
+        openrc_file_contents: | 
+            export OS_AUTH_URL=https://auth.example.com/v2.0/
+        # Storage password 
+        restic_storage_password: "super complex password"
+        # Destination for backups, see eg: https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html#openstack-swift
+        restic_storage_target: "swift:container:/path"
+        # What directory you want to back up
+        restic_backup_target: /home/me
+        # Any exclude patterns
+        restic_exclude_file_contents: | 
+            /home/me/.cache
+        # How often backups should be ran, see special_time here: https://docs.ansible.com/ansible/latest/modules/cron_module.html?highlight=cron#parameters
+        cron_run_time: hourly
 
 License
 -------
 
 BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).

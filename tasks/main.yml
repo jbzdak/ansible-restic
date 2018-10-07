@@ -3,4 +3,5 @@
 - name: Install site scripts
   include: create-site.yaml
   with_dict: "{{ restic_sites }}"
+  no_log: True
 

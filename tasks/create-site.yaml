@@ -25,12 +25,14 @@
     src: storage-password.txt
     dest: "{{ restic_scripts_dir }}/{{ site_name }}.pass"
     mode: "600"
+  no_log: yes
 
 - name: create init file
   template:
     src: restic-init.sh
     dest: "{{ restic_scripts_dir }}/{{ site_name }}.init.sh"
     mode: "700"
+  no_log: yes
 
 - name: create backup file
   template:
